@@ -12,4 +12,5 @@ type Options struct {
 	RandomAgent bool
 	Silent      bool
 	Update      bool
+	Help        bool
 }
