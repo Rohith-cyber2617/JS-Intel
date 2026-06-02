@@ -8,10 +8,13 @@ import (
 	"github.com/Rohith-cyber2617/JS-Intel/internal/downloader"
 	"github.com/Rohith-cyber2617/JS-Intel/internal/extractor"
 	"github.com/Rohith-cyber2617/JS-Intel/internal/finder"
+	"github.com/Rohith-cyber2617/JS-Intel/internal/models"
+	"github.com/Rohith-cyber2617/JS-Intel/internal/report"
+	"github.com/Rohith-cyber2617/JS-Intel/internal/scorer"
 	"github.com/Rohith-cyber2617/JS-Intel/internal/stats"
 )
 
-func Run(target string) ([]string, error) {
+func Run(target string) (*report.Report, error) {
 
 	fmt.Println(colors.GreenText("[INFO] Discovering JavaScript Files"))
 
@@ -19,6 +22,10 @@ func Run(target string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	rep := report.New()
+
+	rep.SetTarget(target)
 
 	stats.ScanStats.TargetsScanned++
 
@@ -31,6 +38,17 @@ func Run(target string) ([]string, error) {
 
 		endpoints := extractor.ExtractEndpoints(content)
 		findings := finder.FindSecrets(content)
+
+		riskScore := scorer.CalculateRisk(len(findings))
+
+		jsFile := models.JSFile{
+			URL:       js,
+			Findings:  findings,
+			RiskScore: riskScore,
+			Verified:  false,
+		}
+
+		rep.AddJSFile(jsFile)
 
 		stats.ScanStats.JSFilesFound++
 
@@ -63,6 +81,12 @@ func Run(target string) ([]string, error) {
 
 			stats.ScanStats.EndpointsFound++
 
+			rep.AddEndpoint(models.Endpoint{
+				URL:      endpoint,
+				Status:   0,
+				Internal: false,
+			})
+
 			fmt.Printf(
 				"%s %s\n",
 				colors.BlueText("[ENDPOINT]"),
@@ -73,47 +97,20 @@ func Run(target string) ([]string, error) {
 
 	PrintStatistics()
 
-	return jsFiles, nil
+	return rep, nil
 }
 
 func PrintStatistics() {
 
 	fmt.Println()
 
-	fmt.Println(
-		colors.CyanText("═══════════════════════════════"),
-	)
+	fmt.Println(colors.CyanText("═══════════════════════════════"))
+	fmt.Println(colors.CyanText("          Statistics"))
+	fmt.Println(colors.CyanText("═══════════════════════════════"))
 
-	fmt.Println(
-		colors.CyanText("          Statistics"),
-	)
-
-	fmt.Println(
-		colors.CyanText("═══════════════════════════════"),
-	)
-
-	fmt.Printf(
-		"Targets Scanned : %d\n",
-		stats.ScanStats.TargetsScanned,
-	)
-
-	fmt.Printf(
-		"JS Files Found  : %d\n",
-		stats.ScanStats.JSFilesFound,
-	)
-
-	fmt.Printf(
-		"Endpoints Found : %d\n",
-		stats.ScanStats.EndpointsFound,
-	)
-
-	fmt.Printf(
-		"Secrets Found   : %d\n",
-		stats.ScanStats.SecretsFound,
-	)
-
-	fmt.Printf(
-		"GraphQL Found   : %d\n",
-		stats.ScanStats.GraphQLFound,
-	)
+	fmt.Printf("Targets Scanned : %d\n", stats.ScanStats.TargetsScanned)
+	fmt.Printf("JS Files Found  : %d\n", stats.ScanStats.JSFilesFound)
+	fmt.Printf("Endpoints Found : %d\n", stats.ScanStats.EndpointsFound)
+	fmt.Printf("Secrets Found   : %d\n", stats.ScanStats.SecretsFound)
+	fmt.Printf("GraphQL Found   : %d\n", stats.ScanStats.GraphQLFound)
 }
