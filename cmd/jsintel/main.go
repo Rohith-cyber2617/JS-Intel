@@ -22,8 +22,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	report, err := scanner.Run(opts.URL)
-	if err != nil {
+report, err := scanner.Run(opts.URL, opts.Depth)	if err != nil {
 		fmt.Printf("[ERROR] %s\n", err)
 		os.Exit(1)
 	}
