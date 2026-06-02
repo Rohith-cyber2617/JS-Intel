@@ -2,11 +2,15 @@ package parser
 
 import (
 	"flag"
+	"fmt"
+	"os"
 
 	"github.com/Rohith-cyber2617/JS-Intel/internal/config"
+	helpmenu "github.com/Rohith-cyber2617/JS-Intel/internal/help"
 )
 
 func ParseFlags() *config.Options {
+
 	opts := &config.Options{}
 
 	flag.StringVar(&opts.URL, "u", "", "Target URL")
@@ -34,7 +38,15 @@ func ParseFlags() *config.Options {
 	flag.BoolVar(&opts.Update, "update", false, "Update")
 	flag.BoolVar(&opts.Update, "up", false, "Update")
 
+	flag.BoolVar(&opts.Help, "h", false, "Help")
+	flag.BoolVar(&opts.Help, "help", false, "Help")
+
 	flag.Parse()
+
+	if opts.Help {
+		fmt.Println(helpmenu.HelpMenu)
+		os.Exit(0)
+	}
 
 	return opts
 }
