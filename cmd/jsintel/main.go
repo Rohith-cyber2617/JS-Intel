@@ -8,6 +8,7 @@ import (
 	"github.com/Rohith-cyber2617/JS-Intel/internal/banner"
 	helpmenu "github.com/Rohith-cyber2617/JS-Intel/internal/help"
 	"github.com/Rohith-cyber2617/JS-Intel/internal/parser"
+	"github.com/Rohith-cyber2617/JS-Intel/internal/scanner"
 	"github.com/Rohith-cyber2617/JS-Intel/internal/validator"
 )
 
@@ -50,5 +51,13 @@ func main() {
 
 	if opts.RandomAgent {
 		fmt.Println("[INFO] Random User-Agent Enabled")
+	}
+
+	if opts.URL != "" {
+		_, err := scanner.Run(opts.URL)
+		if err != nil {
+			fmt.Printf("[ERROR] %s\n", err)
+			os.Exit(1)
+		}
 	}
 }
