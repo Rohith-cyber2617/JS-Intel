@@ -1,12 +1,10 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 
 	"github.com/Rohith-cyber2617/JS-Intel/internal/banner"
-	helpmenu "github.com/Rohith-cyber2617/JS-Intel/internal/help"
 	"github.com/Rohith-cyber2617/JS-Intel/internal/parser"
 	"github.com/Rohith-cyber2617/JS-Intel/internal/scanner"
 	"github.com/Rohith-cyber2617/JS-Intel/internal/validator"
@@ -14,16 +12,7 @@ import (
 
 func main() {
 
-	helpFlag := flag.Bool("help", false, "Display help menu")
-	helpShort := flag.Bool("h", false, "Display help menu")
-
 	opts := parser.ParseFlags()
-
-	if *helpFlag || *helpShort {
-		fmt.Println(banner.Banner)
-		fmt.Println(helpmenu.HelpMenu)
-		return
-	}
 
 	fmt.Println(banner.Banner)
 
@@ -42,8 +31,8 @@ func main() {
 		fmt.Printf("[INFO] Target List : %s\n", opts.List)
 	}
 
-	fmt.Printf("[INFO] Threads    : %d\n", opts.Threads)
-	fmt.Printf("[INFO] Depth      : %d\n", opts.Depth)
+	fmt.Printf("[INFO] Threads : %d\n", opts.Threads)
+	fmt.Printf("[INFO] Depth   : %d\n", opts.Depth)
 
 	if opts.Verify {
 		fmt.Println("[INFO] Verification Enabled")
