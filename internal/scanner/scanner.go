@@ -5,6 +5,7 @@ import (
 
 	"github.com/Rohith-cyber2617/JS-Intel/internal/colors"
 	"github.com/Rohith-cyber2617/JS-Intel/internal/crawler"
+	"github.com/Rohith-cyber2617/JS-Intel/internal/depth"
 	"github.com/Rohith-cyber2617/JS-Intel/internal/downloader"
 	"github.com/Rohith-cyber2617/JS-Intel/internal/extractor"
 	"github.com/Rohith-cyber2617/JS-Intel/internal/finder"
@@ -14,7 +15,7 @@ import (
 	"github.com/Rohith-cyber2617/JS-Intel/internal/stats"
 )
 
-func Run(target string) (*report.Report, error) {
+func Run(target string, scanDepth int) (*report.Report, error) {
 
 	fmt.Println(colors.GreenText("[INFO] Discovering JavaScript Files"))
 
@@ -24,20 +25,39 @@ func Run(target string) (*report.Report, error) {
 	}
 
 	rep := report.New()
-
 	rep.SetTarget(target)
 
 	stats.ScanStats.TargetsScanned++
 
 	for _, js := range jsFiles {
 
+		stats.ScanStats.JSFilesFound++
+
+		if scanDepth == 1 {
+			fmt.Println(colors.GreenText("[JS] " + js))
+
+			rep.AddJSFile(models.JSFile{
+				URL: js,
+			})
+
+			continue
+		}
+
 		content, err := downloader.Download(js)
 		if err != nil {
 			continue
 		}
 
-		endpoints := extractor.ExtractEndpoints(content)
-		findings := finder.FindSecrets(content)
+		var findings []models.Finding
+		var endpoints []string
+
+		if depth.AllowEndpoints(scanDepth) {
+			endpoints = extractor.ExtractEndpoints(content)
+		}
+
+		if depth.AllowSecrets(scanDepth) {
+			findings = finder.FindSecrets(content)
+		}
 
 		riskScore := scorer.CalculateRisk(len(findings))
 
@@ -49,8 +69,6 @@ func Run(target string) (*report.Report, error) {
 		}
 
 		rep.AddJSFile(jsFile)
-
-		stats.ScanStats.JSFilesFound++
 
 		if len(findings) > 0 {
 
@@ -82,9 +100,7 @@ func Run(target string) (*report.Report, error) {
 			stats.ScanStats.EndpointsFound++
 
 			rep.AddEndpoint(models.Endpoint{
-				URL:      endpoint,
-				Status:   0,
-				Internal: false,
+				URL: endpoint,
 			})
 
 			fmt.Printf(
